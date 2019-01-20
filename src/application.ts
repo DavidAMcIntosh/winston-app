@@ -10,6 +10,35 @@ import {ServiceMixin} from '@loopback/service-proxy';
 import * as path from 'path';
 import {MySequence} from './sequence';
 
+//import winston logging packages
+import * as winston from 'winston';
+import * as winstonDailyRotateFile from 'winston-daily-rotate-file';
+
+//define custom log format
+const logFormat = winston.format.combine(
+  winston.format.colorize(),
+  winston.format.timestamp(),
+  winston.format.align(),
+  winston.format.printf(
+    info => `${info.timestamp} ${info.level}: ${info.message}`,
+  ),
+);
+
+//add file and console loggers to the winston instance
+winston.loggers.add('customLogger', {
+  format: logFormat,
+  transports: [
+    new winstonDailyRotateFile({
+      filename: './logs/custom-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      level: 'info',
+    }),
+    new winston.transports.Console({
+      level: 'info',
+    }),
+  ],
+});
+
 export class WinstonAppApplication extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
 ) {
